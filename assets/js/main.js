@@ -261,6 +261,10 @@ function checkoutOnWhatsApp() {
     showToast("Your cart is empty");
     return;
   }
+  if (!window.GritAuth?.getCurrentUser()) {
+    window.GritAuth?.requireSignIn(checkoutOnWhatsApp);
+    return;
+  }
   const address = getValidatedAddress();
   if (!address) return;
 
@@ -271,6 +275,19 @@ function checkoutOnWhatsApp() {
   message += `\n${formatTotalsBlock(cart)}\n\n${formatAddressBlock(address)}\n\nPlease confirm availability and delivery.`;
   const url = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
   window.open(url, "_blank");
+
+  const subtotal = cartTotal(cart);
+  const couponCode = getAppliedCoupon();
+  window.GritAuth?.saveOrder({
+    items: cart,
+    subtotal,
+    discount: computeDiscount(subtotal, couponCode),
+    couponCode: couponCode || null,
+    total: cartGrandTotal(cart),
+    address,
+    paymentMethod: "whatsapp",
+    status: "new",
+  });
 }
 
 function formatTotalsBlock(cart) {
@@ -291,14 +308,28 @@ function payViaUPI() {
     showToast("Your cart is empty");
     return;
   }
+  if (!window.GritAuth?.getCurrentUser()) {
+    window.GritAuth?.requireSignIn(payViaUPI);
+    return;
+  }
   const address = getValidatedAddress();
   if (!address) return;
 
+  const subtotal = cartTotal(cart);
+  const couponCode = getAppliedCoupon();
   const total = cartGrandTotal(cart);
   const orderNote = cart.map((item) => `${item.name} (${item.size}) x${item.qty}`).join(", ");
   const upiUrl = `upi://pay?pa=${encodeURIComponent(UPI_VPA)}&pn=${encodeURIComponent(UPI_PAYEE_NAME)}&am=${total}&cu=INR&tn=${encodeURIComponent(orderNote)}`;
 
-  _pendingUpiOrder = { total, orderNote, address };
+  _pendingUpiOrder = {
+    total,
+    orderNote,
+    address,
+    items: cart,
+    subtotal,
+    discount: computeDiscount(subtotal, couponCode),
+    couponCode: couponCode || null,
+  };
   closeCart();
   openUpiModal(total, upiUrl);
 }
@@ -325,9 +356,21 @@ function closeUpiModal() {
 
 function confirmUpiPaid() {
   if (!_pendingUpiOrder) return;
-  const { total, orderNote, address } = _pendingUpiOrder;
+  const { total, orderNote, address, items, subtotal, discount, couponCode } = _pendingUpiOrder;
   const message = `Hi Grit & Grains! I've just paid ₹${total} via UPI for:\n\n${orderNote}\n\n${formatAddressBlock(address)}\n\nPlease confirm and share the delivery timeline.`;
   window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`, "_blank");
+
+  window.GritAuth?.saveOrder({
+    items,
+    subtotal,
+    discount,
+    couponCode,
+    total,
+    address,
+    paymentMethod: "upi",
+    status: "new",
+  });
+
   closeUpiModal();
   saveCart([]);
   localStorage.removeItem(COUPON_KEY);

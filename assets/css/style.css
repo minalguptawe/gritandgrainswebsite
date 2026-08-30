@@ -173,6 +173,7 @@ section { padding: 72px 0; }
 
 @media (max-width: 480px) {
   .brand img { height: 76px; }
+  .account-btn { padding: 8px 10px; font-size: 0.78rem; }
 }
 
 .nav-links {
@@ -195,7 +196,8 @@ section { padding: 72px 0; }
 
 .nav-actions { display: flex; align-items: center; gap: 14px; }
 
-.cart-btn {
+.cart-btn,
+.account-btn {
   position: relative;
   background: var(--cream-alt);
   border: 1px solid rgba(58,42,27,0.12);
@@ -204,6 +206,13 @@ section { padding: 72px 0; }
   cursor: pointer;
   font-size: 1.05rem;
   line-height: 1;
+}
+.account-btn {
+  font-size: 0.85rem;
+  font-weight: 700;
+  font-family: var(--font-body);
+  color: var(--brown-dark);
+  white-space: nowrap;
 }
 .cart-count {
   position: absolute;
@@ -923,6 +932,19 @@ section { padding: 72px 0; }
   font-size: 0.82rem;
   color: var(--brown);
   margin-bottom: 20px;
+}
+.upi-modal .form-field { text-align: left; margin-bottom: 14px; }
+.auth-resend {
+  display: block;
+  width: 100%;
+  margin-top: 12px;
+  background: none;
+  border: none;
+  color: var(--terracotta);
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  text-decoration: underline;
 }
 
 .toast {
