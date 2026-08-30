@@ -1,0 +1,19 @@
+<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Grit and Grains logo">
+  <circle cx="100" cy="100" r="96" fill="#FBF6EC" stroke="#5B7F32" stroke-width="3"/>
+  <path d="M20 100a80 80 0 0 1 160 0" fill="none" stroke="#5B7F32" stroke-width="3"/>
+  <path d="M20 100a80 80 0 0 0 160 0" fill="none" stroke="#5B7F32" stroke-width="3"/>
+  <g transform="translate(100,78)">
+    <ellipse cx="0" cy="0" rx="20" ry="26" fill="#7A4E24"/>
+    <ellipse cx="-26" cy="10" rx="16" ry="22" fill="#9C6A34" transform="rotate(-18 -26 10)"/>
+    <ellipse cx="26" cy="10" rx="16" ry="22" fill="#9C6A34" transform="rotate(18 26 10)"/>
+    <path d="M-8 -30 q-16 -6 -26 8 q14 4 26 -8z" fill="#8FAE5D"/>
+    <path d="M8 -30 q16 -6 26 8 q-14 4 -26 -8z" fill="#8FAE5D"/>
+  </g>
+  <rect x="34" y="120" width="132" height="3" fill="#3A2A1B"/>
+  <rect x="34" y="126" width="132" height="1.5" fill="#5B7F32"/>
+  <text x="100" y="150" text-anchor="middle" font-family="Georgia, serif" font-size="20" font-weight="700" fill="#3A2A1B" letter-spacing="1">GRIT &amp; GRAINS</text>
+  <path id="tagPath" d="M40 165 a62 62 0 0 0 120 0" fill="none"/>
+  <text font-family="Georgia, serif" font-size="9.5" fill="#C1440E" letter-spacing="1.5" font-weight="700">
+    <textPath href="#tagPath" startOffset="50%" text-anchor="middle">HEALTHY CAN BE TASTY</textPath>
+  </text>
+</svg>

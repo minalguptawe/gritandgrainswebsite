@@ -1,0 +1,21 @@
+# OS junk
+Thumbs.db
+.DS_Store
+
+# Local dev-only tooling (machine-specific absolute paths)
+.claude/
+
+# Raw/unprocessed source assets not used by the live site
+assets/images/Anjeer Strength Balls_f.mp4
+assets/images/Date Bytes.pdf
+assets/images/Ragi.pdf
+assets/images/Final_Logo_G&G.png
+assets/images/ChatGPT Image Jan 3, 2026, 11_22_41 AM.png
+assets/images/Date Bites.png
+assets/images/Raggi Ladoos.png
+assets/images/WhatsApp Image 2026-08-20 at 8.36.22 AM.jpeg
+assets/images/WhatsApp_Image_2026-01-03_at_11.17.19_AM-removebg-preview.png
+
+# New photos pending a decision on use (see chat) — not yet part of the site
+assets/images/IMG_5518.jpg
+assets/images/IMG_5626.HEIC
