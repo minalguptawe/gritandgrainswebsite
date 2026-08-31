@@ -76,8 +76,8 @@ async function sendOtp() {
     showStep("otp");
     window.showToast?.("OTP sent");
   } catch (err) {
-    console.error(err);
-    window.showToast?.("Couldn't send OTP — please try again");
+    console.error("sendOtp failed:", err);
+    window.showToast?.(`OTP failed: ${err.code || err.message || "unknown error"}`, 8000);
   }
 }
 
@@ -98,8 +98,8 @@ async function verifyOtp() {
       showStep("profile");
     }
   } catch (err) {
-    console.error(err);
-    window.showToast?.("Incorrect OTP — please try again");
+    console.error("verifyOtp failed:", err);
+    window.showToast?.(`Verification failed: ${err.code || err.message || "unknown error"}`, 8000);
   }
 }
 

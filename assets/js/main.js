@@ -377,13 +377,13 @@ function confirmUpiPaid() {
   showToast("Thanks! We've been notified on WhatsApp.");
 }
 
-function showToast(text) {
+function showToast(text, duration = 2400) {
   const toast = document.getElementById("toast");
   if (!toast) return;
   toast.textContent = text;
   toast.classList.add("show");
   clearTimeout(window._toastTimer);
-  window._toastTimer = setTimeout(() => toast.classList.remove("show"), 2400);
+  window._toastTimer = setTimeout(() => toast.classList.remove("show"), duration);
 }
 
 /* ---------- Nav toggle ---------- */
