@@ -14,8 +14,6 @@ import {
   doc,
   getDoc,
   setDoc,
-  addDoc,
-  collection,
   serverTimestamp,
 } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js";
 
@@ -160,17 +158,30 @@ function requireSignIn(callback) {
   openAuthModal();
 }
 
+function generateOrderId() {
+  const ts = Date.now().toString(36).toUpperCase();
+  const rand = Math.random().toString(36).slice(2, 5).toUpperCase();
+  return `GG-${ts}-${rand}`;
+}
+
 async function saveOrder(order) {
   const user = auth.currentUser;
-  if (!user) return;
+  if (!user) return null;
+  const orderId = order.orderId || generateOrderId();
   try {
-    await addDoc(collection(db, "orders"), {
+    await setDoc(doc(db, "orders", orderId), {
       ...order,
+      orderId,
       userId: user.uid,
+      customerName: currentProfile?.name || "",
+      customerPhone: user.phoneNumber || "",
+      customerEmail: currentProfile?.email || "",
       createdAt: serverTimestamp(),
     });
+    return orderId;
   } catch (err) {
     console.error("Order save failed", err);
+    return null;
   }
 }
 
@@ -189,6 +200,7 @@ window.GritAuth = {
     auth.currentUser && currentProfile ? { ...currentProfile, uid: auth.currentUser.uid } : null,
   requireSignIn,
   saveOrder,
+  generateOrderId,
 };
 
 document.addEventListener("DOMContentLoaded", () => {
