@@ -20,12 +20,25 @@ const PRODUCTS = {
   },
 };
 
-// TODO: customize your coupon codes here — type is "percent" or "flat".
-// firstOrderOnly restricts a code to devices that haven't completed a checkout yet.
-const COUPONS = {
-  FLAT10: { type: "percent", value: 10, label: "10% off" },
-  MAG50: { type: "percent", value: 50, label: "50% off" },
-};
+// Coupon codes live in the "Coupons" tab of the Google Sheet (same Apps
+// Script deployment used for order sync) — edit/add/remove rows there, no
+// code changes needed. Columns: Code, Type (percent/flat), Value, Label,
+// FirstOrderOnly (TRUE/FALSE).
+const COUPONS_ENDPOINT =
+  "https://script.google.com/macros/s/AKfycbztwalpDHMcS5PNzro6YI8C94Hvu1P4KyYxP0mvxHKS05AJcjimjbPmlIBLvE1XRQ9D/exec";
+let COUPONS = {};
+let couponsLoaded = false;
+
+async function loadCoupons() {
+  try {
+    const res = await fetch(COUPONS_ENDPOINT);
+    COUPONS = await res.json();
+  } catch (err) {
+    console.error("Failed to load coupons:", err);
+  } finally {
+    couponsLoaded = true;
+  }
+}
 
 const FREE_DELIVERY_THRESHOLD = 1000;
 const DELIVERY_CHARGE = 100;
@@ -114,6 +127,10 @@ function applyCoupon() {
   const code = input?.value.trim().toUpperCase();
   if (!code) {
     showToast("Enter a coupon code");
+    return;
+  }
+  if (!couponsLoaded) {
+    showToast("Still loading coupons — please try again in a moment");
     return;
   }
   const coupon = COUPONS[code];
@@ -527,6 +544,7 @@ document.addEventListener("DOMContentLoaded", () => {
   renderCartDrawer();
   fillAddressForm();
   initTestMode();
+  loadCoupons().then(() => renderCartDrawer());
 
   document.getElementById("checkout-upi")?.addEventListener("click", payViaUPI);
   document.getElementById("submit-test")?.addEventListener("click", submitTestOrder);
