@@ -39,6 +39,20 @@ const firebaseConfig = {
   appId: "1:142475222051:web:88c5715406437f8750e596",
 };
 
+// Every order also gets sent here (Google Apps Script Web App) so it shows up
+// as a human-readable row in a Google Sheet, alongside the Firestore write.
+const SHEETS_WEBHOOK_URL =
+  "https://script.google.com/macros/s/AKfycbztwalpDHMcS5PNzro6YI8C94Hvu1P4KyYxP0mvxHKS05AJcjimjbPmlIBLvE1XRQ9D/exec";
+
+function sendToSheet(orderData) {
+  fetch(SHEETS_WEBHOOK_URL, {
+    method: "POST",
+    mode: "no-cors",
+    headers: { "Content-Type": "text/plain;charset=utf-8" },
+    body: JSON.stringify(orderData),
+  }).catch((err) => console.error("Sheet sync failed:", err));
+}
+
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
@@ -315,18 +329,21 @@ async function saveOrder(order) {
       containersUsed: containerInfo.perUnit * item.qty,
     };
   });
+  const fullOrder = {
+    ...order,
+    items,
+    orderId,
+    userId: user.uid,
+    guest: user.isAnonymous,
+    customerName: currentProfile?.name || order.address?.name || "",
+    customerPhone: (!user.isAnonymous && user.phoneNumber) || order.address?.phone || "",
+    customerEmail: currentProfile?.email || order.address?.email || "",
+  };
+
+  sendToSheet(fullOrder);
+
   try {
-    await setDoc(doc(db, "orders", orderId), {
-      ...order,
-      items,
-      orderId,
-      userId: user.uid,
-      guest: user.isAnonymous,
-      customerName: currentProfile?.name || order.address?.name || "",
-      customerPhone: (!user.isAnonymous && user.phoneNumber) || order.address?.phone || "",
-      customerEmail: currentProfile?.email || order.address?.email || "",
-      createdAt: serverTimestamp(),
-    });
+    await setDoc(doc(db, "orders", orderId), { ...fullOrder, createdAt: serverTimestamp() });
     return orderId;
   } catch (err) {
     console.error("Order save failed", err);
