@@ -55,7 +55,6 @@ function addToCart(id, size, price) {
   }
   saveCart(cart);
   showToast(`Added ${PRODUCTS[id].name} (${size}) to cart`);
-  openCart();
 }
 
 function changeQty(index, delta) {
@@ -246,15 +245,6 @@ function formatAddressBlock(address) {
     .join("\n");
 }
 
-function openCart() {
-  document.getElementById("cart-drawer")?.classList.add("open");
-  document.getElementById("cart-overlay")?.classList.add("open");
-}
-function closeCart() {
-  document.getElementById("cart-drawer")?.classList.remove("open");
-  document.getElementById("cart-overlay")?.classList.remove("open");
-}
-
 function checkoutOnWhatsApp() {
   const cart = getCart();
   if (cart.length === 0) {
@@ -333,7 +323,6 @@ function payViaUPI() {
     discount: computeDiscount(subtotal, couponCode),
     couponCode: couponCode || null,
   };
-  closeCart();
   openUpiModal(total, upiUrl);
 }
 
@@ -494,9 +483,6 @@ document.addEventListener("DOMContentLoaded", () => {
   renderCartDrawer();
   fillAddressForm();
 
-  document.getElementById("cart-toggle")?.addEventListener("click", openCart);
-  document.getElementById("cart-close")?.addEventListener("click", closeCart);
-  document.getElementById("cart-overlay")?.addEventListener("click", closeCart);
   document.getElementById("checkout-whatsapp")?.addEventListener("click", checkoutOnWhatsApp);
   document.getElementById("checkout-upi")?.addEventListener("click", payViaUPI);
   document.getElementById("upi-close")?.addEventListener("click", closeUpiModal);

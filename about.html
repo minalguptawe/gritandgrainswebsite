@@ -23,7 +23,7 @@
     </ul>
     <div class="nav-actions">
       <button class="account-btn" id="account-btn" aria-label="Account"><span class="account-label">👤 Sign In</span></button>
-      <button class="cart-btn" id="cart-toggle" aria-label="Open cart">🛒<span class="cart-count">0</span></button>
+      <a href="cart.html" class="cart-btn" aria-label="View cart">🛒<span class="cart-count">0</span></a>
       <button class="nav-toggle" id="nav-toggle" aria-label="Toggle menu">☰</button>
     </div>
   </div>
@@ -178,118 +178,6 @@
     </div>
   </div>
 </footer>
-
-<div class="cart-overlay" id="cart-overlay"></div>
-<aside class="cart-drawer" id="cart-drawer">
-  <div class="cart-header">
-    <h3>Your Cart</h3>
-    <button class="cart-close" id="cart-close" aria-label="Close cart">&times;</button>
-  </div>
-  <div class="cart-items" id="cart-items"></div>
-  <div class="cart-address">
-    <h4>Delivery Details</h4>
-    <p class="hint">We'll use this to deliver your order — saved on this device for next time.</p>
-
-    <p class="address-subhead">Customer Info</p>
-    <div class="form-field">
-      <label for="addr-name">Full Name</label>
-      <input type="text" id="addr-name" placeholder="Your full name">
-    </div>
-    <div class="address-row">
-      <div class="form-field">
-        <label for="addr-phone">Mobile Number</label>
-        <input type="tel" id="addr-phone" inputmode="numeric" maxlength="10" placeholder="10-digit mobile number">
-      </div>
-      <div class="form-field">
-        <label for="addr-email">Email</label>
-        <input type="email" id="addr-email" placeholder="you@example.com">
-      </div>
-    </div>
-
-    <p class="address-subhead">Address Info</p>
-    <div class="form-field">
-      <label for="addr-address">Full Address</label>
-      <textarea id="addr-address" rows="2" placeholder="House no., street, area"></textarea>
-    </div>
-    <div class="address-row">
-      <div class="form-field">
-        <label for="addr-locality">Locality / Area <span class="optional">(optional)</span></label>
-        <input type="text" id="addr-locality" placeholder="Locality or area">
-      </div>
-      <div class="form-field">
-        <label for="addr-landmark">Landmark <span class="optional">(optional)</span></label>
-        <input type="text" id="addr-landmark" placeholder="Nearby landmark">
-      </div>
-    </div>
-    <div class="address-row">
-      <div class="form-field">
-        <label for="addr-pincode">Pin Code</label>
-        <input type="text" id="addr-pincode" inputmode="numeric" maxlength="6" placeholder="6-digit pincode">
-      </div>
-      <div class="form-field">
-        <label for="addr-city">City</label>
-        <input type="text" id="addr-city" placeholder="City">
-      </div>
-    </div>
-    <div class="form-field">
-      <label for="addr-state">State</label>
-      <select id="addr-state">
-        <option value="">Select State</option>
-        <option>Andaman and Nicobar Islands</option>
-        <option>Andhra Pradesh</option>
-        <option>Arunachal Pradesh</option>
-        <option>Assam</option>
-        <option>Bihar</option>
-        <option>Chandigarh</option>
-        <option>Chhattisgarh</option>
-        <option>Dadra and Nagar Haveli and Daman and Diu</option>
-        <option>Delhi</option>
-        <option>Goa</option>
-        <option>Gujarat</option>
-        <option>Haryana</option>
-        <option>Himachal Pradesh</option>
-        <option>Jammu and Kashmir</option>
-        <option>Jharkhand</option>
-        <option>Karnataka</option>
-        <option>Kerala</option>
-        <option>Ladakh</option>
-        <option>Lakshadweep</option>
-        <option>Madhya Pradesh</option>
-        <option>Maharashtra</option>
-        <option>Manipur</option>
-        <option>Meghalaya</option>
-        <option>Mizoram</option>
-        <option>Nagaland</option>
-        <option>Odisha</option>
-        <option>Puducherry</option>
-        <option>Punjab</option>
-        <option>Rajasthan</option>
-        <option>Sikkim</option>
-        <option>Tamil Nadu</option>
-        <option>Telangana</option>
-        <option>Tripura</option>
-        <option>Uttar Pradesh</option>
-        <option>Uttarakhand</option>
-        <option>West Bengal</option>
-      </select>
-    </div>
-  </div>
-  <div class="cart-footer">
-    <div class="coupon-box">
-      <input type="text" id="coupon-input" placeholder="Coupon code" maxlength="20">
-      <button class="btn btn-secondary btn-sm" id="coupon-apply">Apply</button>
-    </div>
-    <div class="summary-row"><span>Subtotal</span><span id="cart-subtotal">₹0</span></div>
-    <div class="summary-row discount-row" id="discount-row" style="display:none;">
-      <span>Coupon (<span id="applied-coupon-code"></span>)<button class="remove-coupon" id="coupon-remove">Remove</button></span>
-      <span id="cart-discount">-₹0</span>
-    </div>
-    <div class="cart-total"><span>Total</span><span id="cart-total-amount">₹0</span></div>
-    <button class="btn btn-whatsapp btn-block" id="checkout-whatsapp">Checkout on WhatsApp</button>
-    <button class="btn btn-upi btn-block" id="checkout-upi" style="margin-top:10px;">Pay via UPI (QR)</button>
-    <p class="checkout-note">You'll get a QR code to scan and pay with any UPI app.</p>
-  </div>
-</aside>
 
 <a class="wa-float" href="https://wa.me/919217781654" target="_blank" rel="noopener" aria-label="Chat on WhatsApp">💬</a>
 <div class="toast" id="toast"></div>
