@@ -15,6 +15,7 @@ import {
   RecaptchaVerifier,
   signInWithPhoneNumber,
   signInWithEmailAndPassword,
+  signInAnonymously,
   linkWithCredential,
   updatePassword,
   EmailAuthProvider,
@@ -46,6 +47,20 @@ const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 function phoneToPseudoEmail(phone) {
   return `${phone}@phone.gritandgrains.in`;
+}
+
+// Guests get a silent, invisible anonymous session so their orders can still
+// be written to Firestore (the security rules require a signed-in uid) —
+// no OTP, no UI, nothing the customer ever sees.
+async function ensureAuthSession() {
+  if (auth.currentUser) return auth.currentUser;
+  try {
+    const cred = await signInAnonymously(auth);
+    return cred.user;
+  } catch (err) {
+    console.error("Anonymous sign-in failed:", err);
+    return null;
+  }
 }
 
 let recaptchaVerifier = null;
@@ -251,7 +266,7 @@ async function handleSignOut() {
 }
 
 function handleAccountClick() {
-  if (auth.currentUser) {
+  if (auth.currentUser && !auth.currentUser.isAnonymous) {
     openAccountModal();
   } else {
     pendingAction = null;
@@ -275,7 +290,7 @@ function generateOrderId() {
 }
 
 async function saveOrder(order) {
-  const user = auth.currentUser;
+  const user = await ensureAuthSession();
   if (!user) return null;
   const orderId = order.orderId || generateOrderId();
   try {
@@ -283,8 +298,9 @@ async function saveOrder(order) {
       ...order,
       orderId,
       userId: user.uid,
+      guest: user.isAnonymous,
       customerName: currentProfile?.name || order.address?.name || "",
-      customerPhone: user.phoneNumber || order.address?.phone || "",
+      customerPhone: (!user.isAnonymous && user.phoneNumber) || order.address?.phone || "",
       customerEmail: currentProfile?.email || order.address?.email || "",
       createdAt: serverTimestamp(),
     });
@@ -296,11 +312,12 @@ async function saveOrder(order) {
 }
 
 onAuthStateChanged(auth, async (user) => {
-  if (user) {
+  if (user && !user.isAnonymous) {
     const snap = await getDoc(doc(db, "users", user.uid));
     currentProfile = snap.exists() ? snap.data() : { phone: user.phoneNumber };
   } else {
     currentProfile = null;
+    if (!user) ensureAuthSession();
   }
   updateAccountUI();
 });
