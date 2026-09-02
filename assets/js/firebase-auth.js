@@ -47,10 +47,14 @@ const SHEETS_WEBHOOK_URL =
 function sendToSheet(orderData) {
   fetch(SHEETS_WEBHOOK_URL, {
     method: "POST",
-    mode: "no-cors",
     headers: { "Content-Type": "text/plain;charset=utf-8" },
     body: JSON.stringify(orderData),
-  }).catch((err) => console.error("Sheet sync failed:", err));
+  })
+    .then((res) => res.json())
+    .then((result) => {
+      if (!result?.ok) console.error("Sheet sync returned an error:", result);
+    })
+    .catch((err) => console.error("Sheet sync failed:", err));
 }
 
 const app = initializeApp(firebaseConfig);
