@@ -1,11 +1,23 @@
-// Grit & Grains — Firebase phone-OTP sign-in + order storage
-// Uses the Firebase modular SDK v12 straight from Google's CDN (no bundler needed).
+// Grit & Grains — Firebase phone-OTP sign-in with an optional password for
+// faster return visits + order storage.
+//
+// Firebase Auth has no native "phone + password" provider, so this uses a
+// well-known pattern: verify the real phone number via SMS OTP once, then
+// link a password to that same account via Firebase's email/password
+// provider using a deterministic, synthetic "email" derived from the phone
+// number (e.g. "9876543210@phone.gritandgrains.in"). The customer only ever
+// sees/types their phone number and password — the synthetic email is an
+// internal implementation detail, never shown or emailed anywhere.
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js";
 import {
   getAuth,
   RecaptchaVerifier,
   signInWithPhoneNumber,
+  signInWithEmailAndPassword,
+  linkWithCredential,
+  updatePassword,
+  EmailAuthProvider,
   onAuthStateChanged,
   signOut,
 } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js";
@@ -30,6 +42,12 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+function phoneToPseudoEmail(phone) {
+  return `${phone}@phone.gritandgrains.in`;
+}
+
 let recaptchaVerifier = null;
 let confirmationResult = null;
 let pendingAction = null;
@@ -43,16 +61,16 @@ function getRecaptcha() {
 }
 
 function showStep(step) {
-  ["phone", "otp", "profile"].forEach((s) => {
+  ["signin", "phone", "otp", "profile", "setpassword"].forEach((s) => {
     const el = document.getElementById(`auth-step-${s}`);
     if (el) el.style.display = s === step ? "block" : "none";
   });
 }
 
-function openAuthModal() {
+function openAuthModal(step = "signin") {
   document.getElementById("auth-modal")?.classList.add("open");
   document.getElementById("auth-overlay")?.classList.add("open");
-  showStep("phone");
+  showStep(step);
 }
 
 function closeAuthModal() {
@@ -60,10 +78,45 @@ function closeAuthModal() {
   document.getElementById("auth-overlay")?.classList.remove("open");
 }
 
+/* ---------- Sign in with phone + password (returning users) ---------- */
+async function handleSignIn() {
+  const phone = document.getElementById("auth-signin-phone")?.value.trim();
+  const password = document.getElementById("auth-signin-password")?.value;
+
+  if (!/^[6-9]\d{9}$/.test(phone || "")) {
+    window.showToast?.("Please enter a valid 10-digit mobile number");
+    return;
+  }
+  if (!password) {
+    window.showToast?.("Please enter your password");
+    return;
+  }
+
+  try {
+    const cred = await signInWithEmailAndPassword(auth, phoneToPseudoEmail(phone), password);
+    const snap = await getDoc(doc(db, "users", cred.user.uid));
+    currentProfile = snap.exists() ? snap.data() : { phone };
+    finishSignIn();
+  } catch (err) {
+    console.error("signIn failed:", err);
+    if (["auth/user-not-found", "auth/invalid-credential", "auth/wrong-password"].includes(err.code)) {
+      window.showToast?.("No password set for this number yet — verify by OTP", 5000);
+      const otpPhone = document.getElementById("auth-phone");
+      if (otpPhone) otpPhone.value = phone;
+      showStep("phone");
+    } else if (err.code === "auth/too-many-requests") {
+      window.showToast?.("Too many attempts — please try again later.", 5000);
+    } else {
+      window.showToast?.(`Sign in failed: ${err.code || err.message || "unknown error"}`, 5000);
+    }
+  }
+}
+
+/* ---------- Verify phone via OTP (new users, or forgot password) ---------- */
 async function sendOtp() {
   const phoneInput = document.getElementById("auth-phone");
   const phone = phoneInput?.value.trim();
-  if (!/^[6-9]\d{9}$/.test(phone)) {
+  if (!/^[6-9]\d{9}$/.test(phone || "")) {
     window.showToast?.("Please enter a valid 10-digit mobile number");
     return;
   }
@@ -81,7 +134,7 @@ async function sendOtp() {
 
 async function verifyOtp() {
   const otp = document.getElementById("auth-otp")?.value.trim();
-  if (!confirmationResult || !/^\d{6}$/.test(otp)) {
+  if (!confirmationResult || !/^\d{6}$/.test(otp || "")) {
     window.showToast?.("Please enter the 6-digit OTP");
     return;
   }
@@ -91,33 +144,71 @@ async function verifyOtp() {
     const snap = await getDoc(doc(db, "users", user.uid));
     if (snap.exists()) {
       currentProfile = snap.data();
-      finishSignIn();
     } else {
-      showStep("profile");
+      currentProfile = null;
     }
+    showStep(currentProfile ? "setpassword" : "profile");
   } catch (err) {
     console.error("verifyOtp failed:", err);
     window.showToast?.(`Verification failed: ${err.code || err.message || "unknown error"}`, 8000);
   }
 }
 
+/* ---------- First-time profile (name + email, contact details only) ---------- */
 async function saveProfile() {
   const name = document.getElementById("auth-name")?.value.trim();
   const email = document.getElementById("auth-email")?.value.trim();
-  const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email || "");
   if (!name) {
     window.showToast?.("Please enter your name");
     return;
   }
-  if (!emailOk) {
+  if (!EMAIL_REGEX.test(email || "")) {
     window.showToast?.("Please enter a valid email address");
     return;
   }
   const user = auth.currentUser;
   if (!user) return;
-  const profile = { name, email, phone: user.phoneNumber, createdAt: serverTimestamp() };
+  const profile = { name, email, phone: user.phoneNumber, hasPassword: false, createdAt: serverTimestamp() };
   await setDoc(doc(db, "users", user.uid), profile, { merge: true });
   currentProfile = profile;
+  showStep("setpassword");
+}
+
+/* ---------- Set / update password, linked to the phone-verified account ---------- */
+async function savePassword() {
+  const password = document.getElementById("auth-setpassword-password")?.value;
+  const confirmPassword = document.getElementById("auth-setpassword-confirm")?.value;
+  if (!password || password.length < 6) {
+    window.showToast?.("Password must be at least 6 characters");
+    return;
+  }
+  if (password !== confirmPassword) {
+    window.showToast?.("Passwords do not match");
+    return;
+  }
+  const user = auth.currentUser;
+  if (!user || !user.phoneNumber) return;
+  const bareDigits = user.phoneNumber.replace(/^\+91/, "");
+  try {
+    try {
+      await linkWithCredential(user, EmailAuthProvider.credential(phoneToPseudoEmail(bareDigits), password));
+    } catch (err) {
+      if (err.code === "auth/provider-already-linked") {
+        await updatePassword(user, password);
+      } else {
+        throw err;
+      }
+    }
+    await setDoc(doc(db, "users", user.uid), { hasPassword: true }, { merge: true });
+    if (currentProfile) currentProfile.hasPassword = true;
+    finishSignIn();
+  } catch (err) {
+    console.error("savePassword failed:", err);
+    window.showToast?.(`Couldn't save password: ${err.code || err.message || "unknown error"}`, 6000);
+  }
+}
+
+function skipSetPassword() {
   finishSignIn();
 }
 
@@ -133,19 +224,38 @@ function finishSignIn() {
 function updateAccountUI() {
   const signedIn = !!(auth.currentUser && currentProfile);
   document.querySelectorAll(".account-label").forEach((el) => {
-    el.textContent = signedIn ? `👤 ${currentProfile.name.split(" ")[0]}` : "👤 Sign In";
+    el.textContent = signedIn ? `👤 ${(currentProfile.name || "Account").split(" ")[0]}` : "👤 Sign In";
   });
 }
 
-async function handleAccountClick() {
+function openAccountModal() {
+  const nameEl = document.getElementById("account-modal-name");
+  const phoneEl = document.getElementById("account-modal-phone");
+  if (nameEl) nameEl.textContent = currentProfile?.name || "Account";
+  if (phoneEl) phoneEl.textContent = auth.currentUser?.phoneNumber || currentProfile?.phone || "";
+  document.getElementById("account-modal")?.classList.add("open");
+  document.getElementById("account-overlay")?.classList.add("open");
+}
+
+function closeAccountModal() {
+  document.getElementById("account-modal")?.classList.remove("open");
+  document.getElementById("account-overlay")?.classList.remove("open");
+}
+
+async function handleSignOut() {
+  await signOut(auth);
+  currentProfile = null;
+  updateAccountUI();
+  closeAccountModal();
+  window.showToast?.("Signed out");
+}
+
+function handleAccountClick() {
   if (auth.currentUser) {
-    await signOut(auth);
-    currentProfile = null;
-    updateAccountUI();
-    window.showToast?.("Signed out");
+    openAccountModal();
   } else {
     pendingAction = null;
-    openAuthModal();
+    openAuthModal("signin");
   }
 }
 
@@ -155,7 +265,7 @@ function requireSignIn(callback) {
     return;
   }
   pendingAction = callback;
-  openAuthModal();
+  openAuthModal("signin");
 }
 
 function generateOrderId() {
@@ -173,9 +283,9 @@ async function saveOrder(order) {
       ...order,
       orderId,
       userId: user.uid,
-      customerName: currentProfile?.name || "",
-      customerPhone: user.phoneNumber || "",
-      customerEmail: currentProfile?.email || "",
+      customerName: currentProfile?.name || order.address?.name || "",
+      customerPhone: user.phoneNumber || order.address?.phone || "",
+      customerEmail: currentProfile?.email || order.address?.email || "",
       createdAt: serverTimestamp(),
     });
     return orderId;
@@ -188,7 +298,7 @@ async function saveOrder(order) {
 onAuthStateChanged(auth, async (user) => {
   if (user) {
     const snap = await getDoc(doc(db, "users", user.uid));
-    currentProfile = snap.exists() ? snap.data() : null;
+    currentProfile = snap.exists() ? snap.data() : { phone: user.phoneNumber };
   } else {
     currentProfile = null;
   }
@@ -207,6 +317,13 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("account-btn")?.addEventListener("click", handleAccountClick);
   document.getElementById("auth-close")?.addEventListener("click", closeAuthModal);
   document.getElementById("auth-overlay")?.addEventListener("click", closeAuthModal);
+  document.getElementById("account-close")?.addEventListener("click", closeAccountModal);
+  document.getElementById("account-overlay")?.addEventListener("click", closeAccountModal);
+  document.getElementById("account-signout")?.addEventListener("click", handleSignOut);
+
+  document.getElementById("auth-signin-submit")?.addEventListener("click", handleSignIn);
+  document.getElementById("auth-goto-phone")?.addEventListener("click", () => showStep("phone"));
+  document.getElementById("auth-goto-signin")?.addEventListener("click", () => showStep("signin"));
   document.getElementById("auth-send-otp")?.addEventListener("click", sendOtp);
   document.getElementById("auth-verify-otp")?.addEventListener("click", verifyOtp);
   document.getElementById("auth-resend-otp")?.addEventListener("click", () => {
@@ -214,4 +331,6 @@ document.addEventListener("DOMContentLoaded", () => {
     showStep("phone");
   });
   document.getElementById("auth-save-profile")?.addEventListener("click", saveProfile);
+  document.getElementById("auth-save-password")?.addEventListener("click", savePassword);
+  document.getElementById("auth-skip-password")?.addEventListener("click", skipSetPassword);
 });

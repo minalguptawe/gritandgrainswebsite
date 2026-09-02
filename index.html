@@ -348,14 +348,30 @@
 <div class="upi-modal" id="auth-modal">
   <button class="upi-modal-close" id="auth-close" aria-label="Close">&times;</button>
 
-  <div id="auth-step-phone">
+  <div id="auth-step-signin">
     <h3>Sign In</h3>
+    <p class="hint">Enter your mobile number and password.</p>
+    <div class="form-field">
+      <label for="auth-signin-phone">Mobile Number</label>
+      <input type="tel" id="auth-signin-phone" inputmode="numeric" maxlength="10" placeholder="10-digit mobile number" autocomplete="username">
+    </div>
+    <div class="form-field">
+      <label for="auth-signin-password">Password</label>
+      <input type="password" id="auth-signin-password" placeholder="Your password" autocomplete="current-password">
+    </div>
+    <button class="btn btn-primary btn-block" id="auth-signin-submit">Sign In</button>
+    <button class="auth-resend" id="auth-goto-phone">New here or forgot password? Verify by OTP</button>
+  </div>
+
+  <div id="auth-step-phone" style="display:none;">
+    <h3>Verify Your Number</h3>
     <p class="hint">Enter your mobile number — we'll text you a one-time code.</p>
     <div class="form-field">
       <label for="auth-phone">Mobile Number</label>
       <input type="tel" id="auth-phone" inputmode="numeric" maxlength="10" placeholder="10-digit mobile number">
     </div>
     <button class="btn btn-primary btn-block" id="auth-send-otp">Send OTP</button>
+    <button class="auth-resend" id="auth-goto-signin">Already have a password? Sign In</button>
   </div>
 
   <div id="auth-step-otp" style="display:none;">
@@ -380,10 +396,35 @@
       <label for="auth-email">Email</label>
       <input type="email" id="auth-email" placeholder="you@example.com">
     </div>
-    <button class="btn btn-primary btn-block" id="auth-save-profile">Save &amp; Continue</button>
+    <button class="btn btn-primary btn-block" id="auth-save-profile">Continue</button>
+  </div>
+
+  <div id="auth-step-setpassword" style="display:none;">
+    <h3>Set a Password</h3>
+    <p class="hint">So you don't need an OTP every time you sign in.</p>
+    <div class="form-field">
+      <label for="auth-setpassword-password">Password</label>
+      <input type="password" id="auth-setpassword-password" placeholder="At least 6 characters" autocomplete="new-password">
+    </div>
+    <div class="form-field">
+      <label for="auth-setpassword-confirm">Confirm Password</label>
+      <input type="password" id="auth-setpassword-confirm" placeholder="Re-enter password" autocomplete="new-password">
+    </div>
+    <button class="btn btn-primary btn-block" id="auth-save-password">Save Password</button>
+    <button class="auth-resend" id="auth-skip-password">Skip for now</button>
   </div>
 
   <div id="recaptcha-container"></div>
+</div>
+
+<div class="upi-overlay" id="account-overlay"></div>
+<div class="upi-modal" id="account-modal">
+  <button class="upi-modal-close" id="account-close" aria-label="Close">&times;</button>
+  <h3>My Account</h3>
+  <p class="hint">Signed in as</p>
+  <p style="font-weight:700;font-size:1.05rem;margin-bottom:2px;" id="account-modal-name"></p>
+  <p style="color:var(--brown);font-size:0.85rem;margin-bottom:24px;" id="account-modal-phone"></p>
+  <button class="btn btn-primary btn-block" id="account-signout">Sign Out</button>
 </div>
 
 <script src="assets/js/qrcode.js"></script>
