@@ -142,6 +142,18 @@ function applyCoupon() {
     showToast("This code is only valid for first-time orders");
     return;
   }
+  if (coupon.startDate && new Date() < new Date(coupon.startDate)) {
+    showToast("This coupon isn't active yet");
+    return;
+  }
+  if (coupon.endDate) {
+    const end = new Date(coupon.endDate);
+    end.setHours(23, 59, 59, 999);
+    if (new Date() > end) {
+      showToast("This coupon has expired");
+      return;
+    }
+  }
   localStorage.setItem(COUPON_KEY, code);
   if (input) input.value = "";
   renderCartDrawer();
