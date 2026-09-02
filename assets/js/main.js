@@ -23,8 +23,7 @@ const PRODUCTS = {
 // TODO: customize your coupon codes here — type is "percent" or "flat".
 // firstOrderOnly restricts a code to devices that haven't completed a checkout yet.
 const COUPONS = {
-  WELCOME10: { type: "percent", value: 10, label: "10% off", firstOrderOnly: true },
-  FLAT50: { type: "flat", value: 50, label: "₹50 off" },
+  FLAT10: { type: "percent", value: 10, label: "10% off" },
   MAG50: { type: "percent", value: 50, label: "50% off" },
 };
 
