@@ -49,6 +49,18 @@ function phoneToPseudoEmail(phone) {
   return `${phone}@phone.gritandgrains.in`;
 }
 
+// TODO: update this if packaging changes — used to track container/inventory
+// usage per order line item (e.g. a 1 kg order uses two 500 ml containers).
+const CONTAINER_MAP = {
+  "250 g": { container: "250 ml", perUnit: 1 },
+  "500 g": { container: "500 ml", perUnit: 1 },
+  "1 kg": { container: "500 ml", perUnit: 2 },
+};
+
+function getContainerInfo(size) {
+  return CONTAINER_MAP[size] || { container: "", perUnit: 0 };
+}
+
 // Guests get a silent, invisible anonymous session so their orders can still
 // be written to Firestore (the security rules require a signed-in uid) —
 // no OTP, no UI, nothing the customer ever sees.
@@ -293,9 +305,20 @@ async function saveOrder(order) {
   const user = await ensureAuthSession();
   if (!user) return null;
   const orderId = order.orderId || generateOrderId();
+  const items = (order.items || []).map((item) => {
+    const containerInfo = getContainerInfo(item.size);
+    return {
+      ...item,
+      unitPrice: item.price,
+      lineAmount: item.price * item.qty,
+      containerType: containerInfo.container,
+      containersUsed: containerInfo.perUnit * item.qty,
+    };
+  });
   try {
     await setDoc(doc(db, "orders", orderId), {
       ...order,
+      items,
       orderId,
       userId: user.uid,
       guest: user.isAnonymous,
