@@ -7,25 +7,35 @@ const WHATSAPP_NUMBER = "919217781654"; // +91 92177 81654
 const UPI_VPA = "6284602669@ptyes";
 const UPI_PAYEE_NAME = "Grit and Grains";
 
-const PRODUCTS = {
+// Product images are a code/asset concern and stay here; names + prices are
+// fetched from the "Prices" sheet tab below (with these values as a fallback
+// if that fetch ever fails, so the site still works either way).
+const PRODUCT_IMAGES = {
+  "date-bites": "assets/images/date-bites.png",
+  "immunity-balls": "assets/images/immunity-balls.png",
+};
+
+let PRODUCTS = {
   "date-bites": {
     name: "Strength Date Bites",
-    image: "assets/images/date-bites.png",
+    image: PRODUCT_IMAGES["date-bites"],
     sizes: { "250 g": 650, "500 g": 1200, "1 kg": 2125 },
   },
   "immunity-balls": {
     name: "Immunity Balls",
-    image: "assets/images/immunity-balls.png",
+    image: PRODUCT_IMAGES["immunity-balls"],
     sizes: { "250 g": 450, "500 g": 750, "1 kg": 1444 },
   },
 };
+let pricesLoaded = false;
 
-// Coupon codes live in the "Coupons" tab of the Google Sheet (same Apps
-// Script deployment used for order sync) — edit/add/remove rows there, no
-// code changes needed. Columns: Code, Type (percent/flat), Value, Label,
-// FirstOrderOnly (TRUE/FALSE).
-const COUPONS_ENDPOINT =
+// Coupons ("Coupons" tab) and prices ("Prices" tab) both live in the same
+// Google Sheet / Apps Script deployment used for order sync — edit rows
+// there, no code changes needed.
+const SHEETS_BASE_URL =
   "https://script.google.com/macros/s/AKfycbztwalpDHMcS5PNzro6YI8C94Hvu1P4KyYxP0mvxHKS05AJcjimjbPmlIBLvE1XRQ9D/exec";
+const COUPONS_ENDPOINT = `${SHEETS_BASE_URL}?type=coupons`;
+const PRICES_ENDPOINT = `${SHEETS_BASE_URL}?type=prices`;
 let COUPONS = {};
 let couponsLoaded = false;
 
@@ -38,6 +48,45 @@ async function loadCoupons() {
   } finally {
     couponsLoaded = true;
   }
+}
+
+async function loadPrices() {
+  try {
+    const res = await fetch(PRICES_ENDPOINT);
+    const data = await res.json();
+    Object.keys(data).forEach((id) => {
+      if (!data[id]?.sizes || Object.keys(data[id].sizes).length === 0) return;
+      PRODUCTS[id] = {
+        name: data[id].name || PRODUCTS[id]?.name || id,
+        image: PRODUCT_IMAGES[id] || PRODUCTS[id]?.image || "",
+        sizes: data[id].sizes,
+      };
+    });
+  } catch (err) {
+    console.error("Failed to load prices, using defaults:", err);
+  } finally {
+    pricesLoaded = true;
+  }
+}
+
+function applyPricesToProductCards() {
+  document.querySelectorAll(".product-card").forEach((card) => {
+    const id = card.dataset.productId;
+    const product = PRODUCTS[id];
+    if (!product) return;
+
+    card.querySelectorAll(".size-option").forEach((opt) => {
+      const price = product.sizes[opt.dataset.size];
+      if (price == null) return;
+      opt.dataset.price = price;
+      const small = opt.querySelector("small");
+      if (small) small.textContent = `₹${price.toLocaleString("en-IN")}`;
+    });
+
+    const selected = card.querySelector(".size-option.selected") || card.querySelector(".size-option");
+    const priceDisplay = card.querySelector(".price-display");
+    if (selected && priceDisplay) priceDisplay.textContent = `₹${selected.dataset.price}`;
+  });
 }
 
 const FREE_DELIVERY_THRESHOLD = 1000;
@@ -496,20 +545,22 @@ function initProductCards() {
     const options = card.querySelectorAll(".size-option");
     const priceDisplay = card.querySelector(".price-display");
     const addBtn = card.querySelector(".add-to-cart-btn");
-    let selectedSize = options[0]?.dataset.size;
-    let selectedPrice = Number(options[0]?.dataset.price);
 
     options.forEach((opt) => {
       opt.addEventListener("click", () => {
         options.forEach((o) => o.classList.remove("selected"));
         opt.classList.add("selected");
-        selectedSize = opt.dataset.size;
-        selectedPrice = Number(opt.dataset.price);
-        if (priceDisplay) priceDisplay.textContent = `₹${selectedPrice}`;
+        if (priceDisplay) priceDisplay.textContent = `₹${opt.dataset.price}`;
       });
     });
 
-    addBtn?.addEventListener("click", () => addToCart(id, selectedSize, selectedPrice));
+    // Read the currently-selected option fresh at click time (not a value
+    // captured earlier) so a price fetched from the Sheet after page load
+    // is always what actually gets added to the cart.
+    addBtn?.addEventListener("click", () => {
+      const selected = card.querySelector(".size-option.selected") || options[0];
+      if (selected) addToCart(id, selected.dataset.size, Number(selected.dataset.price));
+    });
   });
 }
 
@@ -557,6 +608,7 @@ document.addEventListener("DOMContentLoaded", () => {
   fillAddressForm();
   initTestMode();
   loadCoupons().then(() => renderCartDrawer());
+  loadPrices().then(() => applyPricesToProductCards());
 
   document.getElementById("checkout-upi")?.addEventListener("click", payViaUPI);
   document.getElementById("submit-test")?.addEventListener("click", submitTestOrder);
