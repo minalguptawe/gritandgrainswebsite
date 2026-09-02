@@ -21,15 +21,29 @@ const PRODUCTS = {
 };
 
 // TODO: customize your coupon codes here — type is "percent" or "flat".
+// firstOrderOnly restricts a code to devices that haven't completed a checkout yet.
 const COUPONS = {
-  WELCOME10: { type: "percent", value: 10, label: "10% off" },
+  WELCOME10: { type: "percent", value: 10, label: "10% off", firstOrderOnly: true },
   FLAT50: { type: "flat", value: 50, label: "₹50 off" },
+  MAG50: { type: "percent", value: 50, label: "50% off" },
 };
+
+const FREE_DELIVERY_THRESHOLD = 1000;
+const DELIVERY_CHARGE = 100;
 
 const CART_KEY = "gg-cart";
 const COUPON_KEY = "gg-coupon";
+const ORDER_PLACED_KEY = "gg-has-ordered";
 const ADDRESS_KEY = "gg-address";
 const ADDRESS_FIELDS = ["name", "phone", "email", "address", "locality", "landmark", "pincode", "city", "state"];
+
+function hasOrderedBefore() {
+  return localStorage.getItem(ORDER_PLACED_KEY) === "true";
+}
+
+function markOrderPlaced() {
+  localStorage.setItem(ORDER_PLACED_KEY, "true");
+}
 
 function getCart() {
   try {
@@ -86,9 +100,14 @@ function computeDiscount(subtotal, code) {
   return Math.min(raw, subtotal);
 }
 
+function computeDeliveryCharge(amountAfterDiscount) {
+  return amountAfterDiscount < FREE_DELIVERY_THRESHOLD ? DELIVERY_CHARGE : 0;
+}
+
 function cartGrandTotal(cart) {
   const subtotal = cartTotal(cart);
-  return Math.max(0, subtotal - computeDiscount(subtotal, getAppliedCoupon()));
+  const afterDiscount = Math.max(0, subtotal - computeDiscount(subtotal, getAppliedCoupon()));
+  return afterDiscount + computeDeliveryCharge(afterDiscount);
 }
 
 function applyCoupon() {
@@ -98,14 +117,19 @@ function applyCoupon() {
     showToast("Enter a coupon code");
     return;
   }
-  if (!COUPONS[code]) {
+  const coupon = COUPONS[code];
+  if (!coupon) {
     showToast("Invalid coupon code");
+    return;
+  }
+  if (coupon.firstOrderOnly && hasOrderedBefore()) {
+    showToast("This code is only valid for first-time orders");
     return;
   }
   localStorage.setItem(COUPON_KEY, code);
   if (input) input.value = "";
   renderCartDrawer();
-  showToast(`Coupon applied — ${COUPONS[code].label}`);
+  showToast(`Coupon applied — ${coupon.label}`);
 }
 
 function removeCoupon() {
@@ -172,9 +196,22 @@ function renderCartDrawer() {
     }
   }
 
+  const afterDiscount = Math.max(0, subtotal - discount);
+  const delivery = computeDeliveryCharge(afterDiscount);
+
+  const deliveryRow = document.getElementById("delivery-row");
+  if (deliveryRow) {
+    if (delivery > 0) {
+      deliveryRow.style.display = "flex";
+      document.getElementById("cart-delivery")?.replaceChildren(document.createTextNode(`+₹${delivery}`));
+    } else {
+      deliveryRow.style.display = "none";
+    }
+  }
+
   document
     .getElementById("cart-total-amount")
-    ?.replaceChildren(document.createTextNode(`₹${Math.max(0, subtotal - discount)}`));
+    ?.replaceChildren(document.createTextNode(`₹${afterDiscount + delivery}`));
 }
 
 function getSavedAddress() {
@@ -282,16 +319,25 @@ function checkoutOnWhatsApp() {
     paymentMethod: "whatsapp",
     status: "new",
   });
+  markOrderPlaced();
 }
 
 function formatTotalsBlock(cart) {
   const subtotal = cartTotal(cart);
   const code = getAppliedCoupon();
   const discount = computeDiscount(subtotal, code);
-  if (discount > 0 && code) {
-    return `Subtotal: ₹${subtotal}\nCoupon (${code}): -₹${discount}\nTotal: ₹${subtotal - discount}`;
+  const afterDiscount = Math.max(0, subtotal - discount);
+  const delivery = computeDeliveryCharge(afterDiscount);
+
+  if (!discount && !delivery) {
+    return `Total: ₹${subtotal}`;
   }
-  return `Total: ₹${subtotal}`;
+
+  const lines = [`Subtotal: ₹${subtotal}`];
+  if (discount > 0 && code) lines.push(`Coupon (${code}): -₹${discount}`);
+  if (delivery > 0) lines.push(`Delivery Charge: +₹${delivery}`);
+  lines.push(`Total: ₹${afterDiscount + delivery}`);
+  return lines.join("\n");
 }
 
 let _pendingUpiOrder = null;
@@ -366,6 +412,7 @@ function confirmUpiPaid() {
     status: "new",
   });
 
+  markOrderPlaced();
   closeUpiModal();
   saveCart([]);
   localStorage.removeItem(COUPON_KEY);
