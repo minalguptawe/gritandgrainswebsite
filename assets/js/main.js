@@ -281,32 +281,22 @@ function formatAddressBlock(address) {
     .join("\n");
 }
 
-function checkoutOnWhatsApp() {
+// Hidden testing aid — only visible with ?test=1 in the URL (see initTestMode).
+// Lets you exercise the full checkout/order-save flow without WhatsApp or a
+// real UPI payment. Never shown to real customers.
+function submitTestOrder() {
   const cart = getCart();
   if (cart.length === 0) {
     showToast("Your cart is empty");
     return;
   }
-  // Sign-in is optional while phone-OTP is being stabilized — if signed in, the
-  // order also gets saved to Firestore (see saveOrder); if not, checkout still
-  // works via WhatsApp with the manually entered delivery details below.
   const address = getValidatedAddress();
   if (!address) return;
 
   const orderId = window.GritAuth?.generateOrderId() || "";
-
-  let message = "Hi Grit & Grains! I'd like to order:\n\n";
-  cart.forEach((item) => {
-    message += `• ${item.name} (${item.size}) x${item.qty} — ₹${item.price * item.qty}\n`;
-  });
-  message += `\n${formatTotalsBlock(cart)}\n\n${formatAddressBlock(address)}`;
-  if (orderId) message += `\n\nOrder ID: ${orderId}`;
-  message += `\n\nPlease confirm availability and delivery.`;
-  const url = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
-  window.open(url, "_blank");
-
   const subtotal = cartTotal(cart);
   const couponCode = getAppliedCoupon();
+
   window.GritAuth?.saveOrder({
     orderId,
     items: cart,
@@ -315,10 +305,19 @@ function checkoutOnWhatsApp() {
     couponCode: couponCode || null,
     total: cartGrandTotal(cart),
     address,
-    paymentMethod: "whatsapp",
-    status: "new",
+    paymentMethod: "test",
+    status: "test",
   });
   markOrderPlaced();
+  saveCart([]);
+  localStorage.removeItem(COUPON_KEY);
+  showToast(`Test order submitted — Order ID: ${orderId}`, 6000);
+}
+
+function initTestMode() {
+  const isTest = new URLSearchParams(location.search).get("test") === "1";
+  const btn = document.getElementById("submit-test");
+  if (btn) btn.style.display = isTest ? "block" : "none";
 }
 
 function formatTotalsBlock(cart) {
@@ -347,7 +346,6 @@ function payViaUPI() {
     showToast("Your cart is empty");
     return;
   }
-  // Sign-in is optional while phone-OTP is being stabilized — see checkoutOnWhatsApp.
   const address = getValidatedAddress();
   if (!address) return;
 
@@ -394,7 +392,7 @@ function closeUpiModal() {
 function confirmUpiPaid() {
   if (!_pendingUpiOrder) return;
   const { orderId, total, orderNote, address, items, subtotal, discount, couponCode } = _pendingUpiOrder;
-  let message = `Hi Grit & Grains! I've just paid ₹${total} via UPI for:\n\n${orderNote}\n\n${formatAddressBlock(address)}`;
+  let message = `Hi Grit & Grains! I've just paid via UPI for:\n\n${orderNote}\n\n${formatTotalsBlock(items)}\n\n${formatAddressBlock(address)}`;
   if (orderId) message += `\n\nOrder ID: ${orderId}`;
   message += `\n\nPlease confirm and share the delivery timeline.`;
   window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`, "_blank");
@@ -528,9 +526,10 @@ document.addEventListener("DOMContentLoaded", () => {
   updateCartCount();
   renderCartDrawer();
   fillAddressForm();
+  initTestMode();
 
-  document.getElementById("checkout-whatsapp")?.addEventListener("click", checkoutOnWhatsApp);
   document.getElementById("checkout-upi")?.addEventListener("click", payViaUPI);
+  document.getElementById("submit-test")?.addEventListener("click", submitTestOrder);
   document.getElementById("upi-close")?.addEventListener("click", closeUpiModal);
   document.getElementById("upi-overlay")?.addEventListener("click", closeUpiModal);
   document.getElementById("upi-confirm-paid")?.addEventListener("click", confirmUpiPaid);
