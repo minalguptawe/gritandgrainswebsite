@@ -12,6 +12,8 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js";
 import {
   getAuth,
+  setPersistence,
+  browserLocalPersistence,
   RecaptchaVerifier,
   signInWithPhoneNumber,
   signInWithEmailAndPassword,
@@ -64,6 +66,13 @@ function sendToSheet(orderData) {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
+
+// Keep people signed in across browser restarts on this device (the default
+// is already local persistence, but we set it explicitly so a return visit
+// never drops back to "Sign In" while the refresh token is still valid).
+setPersistence(auth, browserLocalPersistence).catch((err) =>
+  console.error("Failed to set auth persistence:", err)
+);
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -275,6 +284,7 @@ function updateAccountUI() {
   document.querySelectorAll(".account-label").forEach((el) => {
     el.textContent = signedIn ? `👤 ${(currentProfile.name || "Account").split(" ")[0]}` : "👤 Sign In";
   });
+  renderAccountPage();
 }
 
 async function loadUserOrders(uid) {
@@ -324,39 +334,71 @@ function renderOrderHistory(orders) {
     .join("");
 }
 
-async function openAccountModal() {
-  const nameEl = document.getElementById("account-modal-name");
-  const phoneEl = document.getElementById("account-modal-phone");
-  const emailEl = document.getElementById("account-modal-email");
-  if (nameEl) nameEl.textContent = currentProfile?.name || "Account";
-  if (phoneEl) phoneEl.textContent = auth.currentUser?.phoneNumber || currentProfile?.phone || "";
-  if (emailEl) emailEl.textContent = currentProfile?.email || "";
+// Populates account.html — the full-page "My Account" view (details, saved
+// address, order history). No-ops on any other page, since the elements it
+// looks for simply won't exist there.
+async function renderAccountPage() {
+  const contentEl = document.getElementById("account-page-content");
+  const promptEl = document.getElementById("account-signin-prompt");
+  if (!contentEl || !promptEl) return;
 
-  document.getElementById("account-modal")?.classList.add("open");
-  document.getElementById("account-overlay")?.classList.add("open");
+  const signedIn = !!(auth.currentUser && !auth.currentUser.isAnonymous && currentProfile);
+  if (!signedIn) {
+    contentEl.style.display = "none";
+    promptEl.style.display = "block";
+    return;
+  }
+  promptEl.style.display = "none";
+  contentEl.style.display = "block";
+
+  const nameEl = document.getElementById("account-page-name");
+  const phoneEl = document.getElementById("account-page-phone");
+  const emailEl = document.getElementById("account-page-email");
+  if (nameEl) nameEl.textContent = currentProfile?.name || "—";
+  if (phoneEl) phoneEl.textContent = auth.currentUser?.phoneNumber || currentProfile?.phone || "—";
+  if (emailEl) emailEl.textContent = currentProfile?.email || "—";
+
+  // The saved address form is pre-filled from localStorage by main.js on
+  // page load; if this account also has one saved server-side, prefer it.
+  if (currentProfile?.address) {
+    Object.entries(currentProfile.address).forEach(([field, value]) => {
+      const el = document.getElementById(`addr-${field}`);
+      if (el && value) el.value = value;
+    });
+  }
 
   const list = document.getElementById("account-orders-list");
-  if (list) list.innerHTML = '<p class="account-orders-empty">Loading your orders…</p>';
-  const uid = auth.currentUser?.uid;
-  if (uid) renderOrderHistory(await loadUserOrders(uid));
+  if (list) {
+    list.innerHTML = '<p class="account-orders-empty">Loading your orders…</p>';
+    renderOrderHistory(await loadUserOrders(auth.currentUser.uid));
+  }
 }
 
-function closeAccountModal() {
-  document.getElementById("account-modal")?.classList.remove("open");
-  document.getElementById("account-overlay")?.classList.remove("open");
+async function saveAccountAddress() {
+  const address = window.getValidatedAddress?.();
+  if (!address) return;
+  const user = auth.currentUser;
+  if (!user || user.isAnonymous) return;
+  try {
+    await setDoc(doc(db, "users", user.uid), { address }, { merge: true });
+    if (currentProfile) currentProfile.address = address;
+    window.showToast?.("Address saved");
+  } catch (err) {
+    console.error("Failed to save address:", err);
+    window.showToast?.("Couldn't save address, please try again", 5000);
+  }
 }
 
 async function handleSignOut() {
   await signOut(auth);
   currentProfile = null;
   updateAccountUI();
-  closeAccountModal();
   window.showToast?.("Signed out");
 }
 
 function handleAccountClick() {
   if (auth.currentUser && !auth.currentUser.isAnonymous) {
-    openAccountModal();
+    window.location.href = "account.html";
   } else {
     pendingAction = null;
     openAuthModal("signin");
@@ -437,9 +479,9 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("account-btn")?.addEventListener("click", handleAccountClick);
   document.getElementById("auth-close")?.addEventListener("click", closeAuthModal);
   document.getElementById("auth-overlay")?.addEventListener("click", closeAuthModal);
-  document.getElementById("account-close")?.addEventListener("click", closeAccountModal);
-  document.getElementById("account-overlay")?.addEventListener("click", closeAccountModal);
   document.getElementById("account-signout")?.addEventListener("click", handleSignOut);
+  document.getElementById("account-page-signin-btn")?.addEventListener("click", () => openAuthModal("signin"));
+  document.getElementById("account-save-address")?.addEventListener("click", saveAccountAddress);
 
   document.getElementById("auth-signin-submit")?.addEventListener("click", handleSignIn);
   document.getElementById("auth-goto-phone")?.addEventListener("click", () => showStep("phone"));

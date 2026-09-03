@@ -332,8 +332,9 @@ section { padding: 72px 0; }
 .hero-slide img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
   border-radius: var(--radius);
+  background: var(--cream-alt);
   filter: drop-shadow(var(--shadow));
 }
 
@@ -947,11 +948,33 @@ section { padding: 72px 0; }
 }
 .upi-modal.open { opacity: 1; pointer-events: auto; transform: translate(-50%, -50%) scale(1); }
 
-#account-modal {
-  width: min(400px, 92vw);
-  max-height: 85vh;
-  overflow-y: auto;
+.account-signin-prompt {
+  background: var(--white);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+  padding: 50px 30px;
+  text-align: center;
 }
+.account-signin-prompt p { margin-bottom: 18px; color: var(--brown); }
+
+.account-grid {
+  display: grid;
+  grid-template-columns: 1fr 1.3fr;
+  gap: 32px;
+  align-items: start;
+}
+@media (max-width: 900px) {
+  .account-grid { grid-template-columns: 1fr; }
+}
+
+.account-static-value {
+  margin: 0;
+  padding: 12px 16px;
+  border-radius: var(--radius-sm);
+  background: var(--cream-alt);
+  font-weight: 600;
+}
+
 .account-orders { text-align: left; }
 .account-orders-empty { color: var(--brown); font-size: 0.88rem; }
 .account-order-row {

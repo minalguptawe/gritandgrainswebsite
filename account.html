@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Contact Us | Grit &amp; Grains</title>
-<meta name="description" content="Get in touch with Grit & Grains — order via WhatsApp or phone, or send us a message.">
+<title>My Account | Grit &amp; Grains</title>
+<meta name="description" content="View your account details, saved delivery address, and order history.">
 <link rel="icon" href="assets/images/logo.png" type="image/png">
 <link rel="stylesheet" href="assets/css/style.css">
 </head>
@@ -19,7 +19,7 @@
       <li><a href="index.html">Home</a></li>
       <li><a href="shop.html">Shop</a></li>
       <li><a href="about.html">About</a></li>
-      <li><a href="contact.html" class="active">Contact</a></li>
+      <li><a href="contact.html">Contact</a></li>
     </ul>
     <div class="nav-actions">
       <button class="account-btn" id="account-btn" aria-label="Account"><span class="account-label">👤 Sign In</span></button>
@@ -31,72 +31,133 @@
 
 <section class="page-header">
   <div class="container">
-    <span class="eyebrow">Contact Us</span>
-    <h1>We'd Love to Hear From You</h1>
-    <p class="lead center">Fastest way to order is WhatsApp — but feel free to drop us a message too.</p>
+    <span class="eyebrow">My Account</span>
+    <h1>Your Details &amp; Orders</h1>
+    <p class="lead center">Your account details, saved delivery address, and full order history.</p>
   </div>
 </section>
 
-<section style="padding-top:0;">
-  <div class="container contact-grid">
+<section class="section-alt" style="padding-top:0;">
+  <div class="container">
 
-    <div class="contact-card reveal">
-      <h3 style="margin-bottom:20px;">Send Us a Message</h3>
-      <form id="contact-form">
-        <div class="form-field">
-          <label for="name">Name</label>
-          <input type="text" id="name" name="name" required placeholder="Your full name">
-        </div>
-        <div class="form-field">
-          <label for="email">Email</label>
-          <input type="email" id="email" name="email" required placeholder="you@example.com">
-        </div>
-        <div class="form-field">
-          <label for="phone">Phone Number</label>
-          <input type="tel" id="phone" name="phone" inputmode="numeric" maxlength="10" required placeholder="10-digit mobile number">
-        </div>
-        <div class="form-field">
-          <label for="message">Message</label>
-          <textarea id="message" name="message" rows="5" required placeholder="Tell us what you'd like to order or ask..."></textarea>
-        </div>
-        <button type="submit" class="btn btn-primary btn-block">Send via WhatsApp</button>
-      </form>
+    <div id="account-signin-prompt" class="account-signin-prompt">
+      <p>Please sign in to view your account.</p>
+      <button class="btn btn-primary" id="account-page-signin-btn">Sign In</button>
     </div>
 
-    <div class="reveal">
-      <div class="contact-card">
-        <h3 style="margin-bottom:10px;">Reach Us Directly</h3>
-        <ul class="contact-info-list">
-          <li>
-            <span class="ci-icon">📞</span>
-            <div>
-              <strong>Phone</strong>
-              <a href="tel:+919217781654">+91 92177 81654</a>
+    <div id="account-page-content" style="display:none;">
+      <div class="account-grid">
+
+        <div class="cart-address">
+          <h4>Account Details</h4>
+          <p class="hint">Your signed-in contact details.</p>
+          <div class="form-field">
+            <label>Full Name</label>
+            <p class="account-static-value" id="account-page-name">—</p>
+          </div>
+          <div class="form-field">
+            <label>Mobile Number</label>
+            <p class="account-static-value" id="account-page-phone">—</p>
+          </div>
+          <div class="form-field">
+            <label>Email</label>
+            <p class="account-static-value" id="account-page-email">—</p>
+          </div>
+          <button class="btn btn-secondary btn-block" id="account-signout">Sign Out</button>
+        </div>
+
+        <div class="cart-address">
+          <h4>Saved Address</h4>
+          <p class="hint">Used to pre-fill delivery details at checkout.</p>
+          <div class="form-field">
+            <label for="addr-name">Full Name</label>
+            <input type="text" id="addr-name" placeholder="Your full name">
+          </div>
+          <div class="address-row">
+            <div class="form-field">
+              <label for="addr-phone">Mobile Number</label>
+              <input type="tel" id="addr-phone" inputmode="numeric" maxlength="10" placeholder="10-digit mobile number">
             </div>
-          </li>
-          <li>
-            <span class="ci-icon">💬</span>
-            <div>
-              <strong>WhatsApp</strong>
-              <a href="https://wa.me/919217781654" target="_blank" rel="noopener">Chat with us — lowest prices on orders placed here</a>
+            <div class="form-field">
+              <label for="addr-email">Email</label>
+              <input type="email" id="addr-email" placeholder="you@example.com">
             </div>
-          </li>
-          <li>
-            <span class="ci-icon">✉️</span>
-            <div>
-              <strong>Email</strong>
-              <a href="mailto:minalgutpa.we@gmail.com">minalgutpa.we@gmail.com</a>
+          </div>
+          <div class="form-field">
+            <label for="addr-address">Full Address</label>
+            <textarea id="addr-address" rows="2" placeholder="House no., street, area"></textarea>
+          </div>
+          <div class="address-row">
+            <div class="form-field">
+              <label for="addr-locality">Locality / Area <span class="optional">(optional)</span></label>
+              <input type="text" id="addr-locality" placeholder="Locality or area">
             </div>
-          </li>
-          <li>
-            <span class="ci-icon">📍</span>
-            <div>
-              <strong>Location</strong>
-              <span>Delhi NCR, India — home-kitchen made, local pickup &amp; delivery by arrangement</span>
+            <div class="form-field">
+              <label for="addr-landmark">Landmark <span class="optional">(optional)</span></label>
+              <input type="text" id="addr-landmark" placeholder="Nearby landmark">
             </div>
-          </li>
-        </ul>
-        <a href="https://wa.me/919217781654" target="_blank" rel="noopener" class="btn btn-whatsapp btn-block" style="margin-top:20px;">Order on WhatsApp</a>
+          </div>
+          <div class="address-row">
+            <div class="form-field">
+              <label for="addr-pincode">Pin Code</label>
+              <input type="text" id="addr-pincode" inputmode="numeric" maxlength="6" placeholder="6-digit pincode">
+            </div>
+            <div class="form-field">
+              <label for="addr-city">City</label>
+              <input type="text" id="addr-city" placeholder="City">
+            </div>
+          </div>
+          <div class="form-field">
+            <label for="addr-state">State</label>
+            <select id="addr-state">
+              <option value="">Select State</option>
+              <option>Andaman and Nicobar Islands</option>
+              <option>Andhra Pradesh</option>
+              <option>Arunachal Pradesh</option>
+              <option>Assam</option>
+              <option>Bihar</option>
+              <option>Chandigarh</option>
+              <option>Chhattisgarh</option>
+              <option>Dadra and Nagar Haveli and Daman and Diu</option>
+              <option>Delhi</option>
+              <option>Goa</option>
+              <option>Gujarat</option>
+              <option>Haryana</option>
+              <option>Himachal Pradesh</option>
+              <option>Jammu and Kashmir</option>
+              <option>Jharkhand</option>
+              <option>Karnataka</option>
+              <option>Kerala</option>
+              <option>Ladakh</option>
+              <option>Lakshadweep</option>
+              <option>Madhya Pradesh</option>
+              <option>Maharashtra</option>
+              <option>Manipur</option>
+              <option>Meghalaya</option>
+              <option>Mizoram</option>
+              <option>Nagaland</option>
+              <option>Odisha</option>
+              <option>Puducherry</option>
+              <option>Punjab</option>
+              <option>Rajasthan</option>
+              <option>Sikkim</option>
+              <option>Tamil Nadu</option>
+              <option>Telangana</option>
+              <option>Tripura</option>
+              <option>Uttar Pradesh</option>
+              <option>Uttarakhand</option>
+              <option>West Bengal</option>
+            </select>
+          </div>
+          <button class="btn btn-primary btn-block" id="account-save-address">Save Address</button>
+        </div>
+
+      </div>
+
+      <div class="cart-address" style="margin-top:32px;">
+        <h4>My Orders</h4>
+        <p class="hint">Every order you've placed while signed in.</p>
+        <div class="account-orders" id="account-orders-list"></div>
       </div>
     </div>
 
@@ -146,18 +207,6 @@
 
 <a class="wa-float" href="https://wa.me/919217781654" target="_blank" rel="noopener" aria-label="Chat on WhatsApp">💬</a>
 <div class="toast" id="toast"></div>
-
-<div class="upi-overlay" id="upi-overlay"></div>
-<div class="upi-modal" id="upi-modal">
-  <button class="upi-modal-close" id="upi-close" aria-label="Close">&times;</button>
-  <h3>Scan &amp; Pay</h3>
-  <div class="upi-amount" id="upi-amount">₹0</div>
-  <div class="upi-qr-frame">
-    <div id="upi-qrcode"></div>
-  </div>
-  <p class="hint">Scan with any UPI app — GPay, PhonePe, Paytm, or your bank app.</p>
-  <button class="btn btn-primary btn-block" id="upi-confirm-paid">I've Paid — Notify on WhatsApp</button>
-</div>
 
 <div class="upi-overlay" id="auth-overlay"></div>
 <div class="upi-modal" id="auth-modal">
@@ -232,7 +281,6 @@
   <div id="recaptcha-container"></div>
 </div>
 
-<script src="assets/js/qrcode.js"></script>
 <script src="assets/js/main.js"></script>
 <script type="module" src="assets/js/firebase-auth.js"></script>
 </body>
