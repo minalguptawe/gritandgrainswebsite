@@ -337,6 +337,33 @@ section { padding: 72px 0; }
   filter: drop-shadow(var(--shadow));
 }
 
+.hero-slide-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 5;
+  width: 40px;
+  height: 40px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.85);
+  color: var(--brown, #4a3222);
+  font-size: 1rem;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: var(--shadow);
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+.hero-slide-arrow:hover {
+  background: #fff;
+  transform: translateY(-50%) scale(1.08);
+}
+.hero-slide-prev { left: 10px; }
+.hero-slide-next { right: 10px; }
+
 /* ---------- Badges / feature strip ---------- */
 .feature-strip {
   background: var(--green-dark);

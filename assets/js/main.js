@@ -547,11 +547,39 @@ async function initHeroSlider() {
     const slides = track.querySelectorAll(".hero-slide");
     if (slides.length <= 1) return;
     let index = 0;
-    setInterval(() => {
+
+    const goTo = (newIndex) => {
       slides[index].classList.remove("active");
-      index = (index + 1) % slides.length;
+      index = (newIndex + slides.length) % slides.length;
       slides[index].classList.add("active");
-    }, HERO_SLIDE_INTERVAL);
+    };
+
+    let timer = setInterval(() => goTo(index + 1), HERO_SLIDE_INTERVAL);
+    const restartTimer = () => {
+      clearInterval(timer);
+      timer = setInterval(() => goTo(index + 1), HERO_SLIDE_INTERVAL);
+    };
+
+    const prevBtn = document.createElement("button");
+    prevBtn.className = "hero-slide-arrow hero-slide-prev";
+    prevBtn.setAttribute("aria-label", "Previous photo");
+    prevBtn.innerHTML = "&#10094;";
+    prevBtn.addEventListener("click", () => {
+      goTo(index - 1);
+      restartTimer();
+    });
+
+    const nextBtn = document.createElement("button");
+    nextBtn.className = "hero-slide-arrow hero-slide-next";
+    nextBtn.setAttribute("aria-label", "Next photo");
+    nextBtn.innerHTML = "&#10095;";
+    nextBtn.addEventListener("click", () => {
+      goTo(index + 1);
+      restartTimer();
+    });
+
+    track.appendChild(prevBtn);
+    track.appendChild(nextBtn);
   } catch (err) {
     console.error("Failed to load hero slideshow:", err);
   }
