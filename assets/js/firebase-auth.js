@@ -27,6 +27,10 @@ import {
   doc,
   getDoc,
   setDoc,
+  collection,
+  query,
+  where,
+  getDocs,
   serverTimestamp,
 } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js";
 
@@ -273,13 +277,68 @@ function updateAccountUI() {
   });
 }
 
-function openAccountModal() {
+async function loadUserOrders(uid) {
+  try {
+    const snap = await getDocs(query(collection(db, "orders"), where("userId", "==", uid)));
+    const orders = snap.docs.map((d) => d.data());
+    orders.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
+    return orders;
+  } catch (err) {
+    console.error("Failed to load order history:", err);
+    return [];
+  }
+}
+
+function formatOrderDate(createdAt) {
+  if (!createdAt?.seconds) return "";
+  return new Date(createdAt.seconds * 1000).toLocaleDateString("en-IN", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
+}
+
+function renderOrderHistory(orders) {
+  const list = document.getElementById("account-orders-list");
+  if (!list) return;
+  if (orders.length === 0) {
+    list.innerHTML = '<p class="account-orders-empty">No orders yet.</p>';
+    return;
+  }
+  list.innerHTML = orders
+    .map((order) => {
+      const itemsText = (order.items || []).map((i) => `${i.name} (${i.size}) x${i.qty}`).join(", ");
+      return `
+      <div class="account-order-row">
+        <div class="account-order-row-top">
+          <strong>${order.orderId || ""}</strong>
+          <span>${formatOrderDate(order.createdAt)}</span>
+        </div>
+        <p>${itemsText}</p>
+        <div class="account-order-row-bottom">
+          <span>₹${order.total ?? 0}</span>
+          <span class="account-order-status">${order.status || ""}</span>
+        </div>
+      </div>`;
+    })
+    .join("");
+}
+
+async function openAccountModal() {
   const nameEl = document.getElementById("account-modal-name");
   const phoneEl = document.getElementById("account-modal-phone");
+  const emailEl = document.getElementById("account-modal-email");
   if (nameEl) nameEl.textContent = currentProfile?.name || "Account";
   if (phoneEl) phoneEl.textContent = auth.currentUser?.phoneNumber || currentProfile?.phone || "";
+  if (emailEl) emailEl.textContent = currentProfile?.email || "";
+
   document.getElementById("account-modal")?.classList.add("open");
   document.getElementById("account-overlay")?.classList.add("open");
+
+  const list = document.getElementById("account-orders-list");
+  if (list) list.innerHTML = '<p class="account-orders-empty">Loading your orders…</p>';
+  const uid = auth.currentUser?.uid;
+  if (uid) renderOrderHistory(await loadUserOrders(uid));
 }
 
 function closeAccountModal() {

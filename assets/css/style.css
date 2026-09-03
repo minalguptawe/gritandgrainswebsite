@@ -920,6 +920,46 @@ section { padding: 72px 0; }
 }
 .upi-modal.open { opacity: 1; pointer-events: auto; transform: translate(-50%, -50%) scale(1); }
 
+#account-modal {
+  width: min(400px, 92vw);
+  max-height: 85vh;
+  overflow-y: auto;
+}
+.account-orders { text-align: left; }
+.account-orders-empty { color: var(--brown); font-size: 0.88rem; }
+.account-order-row {
+  border: 1px solid rgba(58,42,27,0.12);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+  margin-bottom: 10px;
+  text-align: left;
+}
+.account-order-row-top {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.82rem;
+  color: var(--brown);
+  margin-bottom: 4px;
+}
+.account-order-row-top strong { color: var(--green-dark); font-size: 0.85rem; }
+.account-order-row p { margin: 0 0 6px; font-size: 0.85rem; color: var(--brown-dark); }
+.account-order-row-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: 700;
+}
+.account-order-status {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--terracotta);
+  background: rgba(193,68,14,0.09);
+  padding: 3px 10px;
+  border-radius: 999px;
+}
+
 .upi-modal-close {
   position: absolute;
   top: 12px;
