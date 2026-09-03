@@ -510,6 +510,53 @@ function initNav() {
   toggle?.addEventListener("click", () => links.classList.toggle("open"));
 }
 
+/* ---------- Homepage hero slideshow ----------
+   Drop image files into assets/images/hero-slides/ and they show up here
+   automatically — no code changes, no manifest to maintain. This asks
+   GitHub directly what's in that folder (works because the site's repo is
+   public), so a fresh photo appears on the next page load once it's pushed. */
+const HERO_SLIDES_FOLDER = "assets/images/hero-slides/";
+const HERO_SLIDES_API =
+  "https://api.github.com/repos/minalguptawe/gritandgrainswebsite/contents/assets/images/hero-slides";
+const HERO_SLIDE_INTERVAL = 4500;
+const IMAGE_EXT_RE = /\.(jpe?g|png|gif|webp)$/i;
+
+async function initHeroSlider() {
+  const track = document.getElementById("hero-slider");
+  if (!track) return;
+
+  try {
+    const res = await fetch(HERO_SLIDES_API);
+    const files = await res.json();
+    const names = (Array.isArray(files) ? files : [])
+      .filter((f) => f.type === "file" && IMAGE_EXT_RE.test(f.name))
+      .map((f) => f.name)
+      .sort();
+
+    if (names.length === 0) return; // keep the fallback slide already in the HTML
+
+    track.innerHTML = names
+      .map(
+        (name, i) => `
+      <div class="hero-slide${i === 0 ? " active" : ""}">
+        <img src="${HERO_SLIDES_FOLDER}${encodeURIComponent(name)}" alt="Grit and Grains">
+      </div>`
+      )
+      .join("");
+
+    const slides = track.querySelectorAll(".hero-slide");
+    if (slides.length <= 1) return;
+    let index = 0;
+    setInterval(() => {
+      slides[index].classList.remove("active");
+      index = (index + 1) % slides.length;
+      slides[index].classList.add("active");
+    }, HERO_SLIDE_INTERVAL);
+  } catch (err) {
+    console.error("Failed to load hero slideshow:", err);
+  }
+}
+
 /* ---------- Reveal on scroll ---------- */
 function initReveal() {
   const items = document.querySelectorAll(".reveal");
@@ -600,6 +647,7 @@ function initContactForm() {
 document.addEventListener("DOMContentLoaded", () => {
   initNav();
   initReveal();
+  initHeroSlider();
   initFooterYear();
   initProductCards();
   initContactForm();

@@ -48,62 +48,66 @@
       </div>
     </div>
     <div class="hero-art reveal">
-      <svg viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-        <defs>
-          <radialGradient id="heroGlow" cx="50%" cy="42%" r="60%">
-            <stop offset="0%" stop-color="#F6E9C9"/>
-            <stop offset="100%" stop-color="#FBF6EC" stop-opacity="0"/>
-          </radialGradient>
-          <radialGradient id="heroBowl" cx="50%" cy="0%" r="100%">
-            <stop offset="0%" stop-color="#C8956A"/>
-            <stop offset="100%" stop-color="#8B5A2B"/>
-          </radialGradient>
-          <radialGradient id="heroBallLight" cx="35%" cy="28%" r="75%">
-            <stop offset="0%" stop-color="#D9AE79"/>
-            <stop offset="100%" stop-color="#8B5A2B"/>
-          </radialGradient>
-          <radialGradient id="heroBallDark" cx="35%" cy="28%" r="75%">
-            <stop offset="0%" stop-color="#6B4423"/>
-            <stop offset="100%" stop-color="#2E2013"/>
-          </radialGradient>
-        </defs>
+      <div class="hero-slider" id="hero-slider">
+        <div class="hero-slide active">
+          <svg viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <defs>
+              <radialGradient id="heroGlow" cx="50%" cy="42%" r="60%">
+                <stop offset="0%" stop-color="#F6E9C9"/>
+                <stop offset="100%" stop-color="#FBF6EC" stop-opacity="0"/>
+              </radialGradient>
+              <radialGradient id="heroBowl" cx="50%" cy="0%" r="100%">
+                <stop offset="0%" stop-color="#C8956A"/>
+                <stop offset="100%" stop-color="#8B5A2B"/>
+              </radialGradient>
+              <radialGradient id="heroBallLight" cx="35%" cy="28%" r="75%">
+                <stop offset="0%" stop-color="#D9AE79"/>
+                <stop offset="100%" stop-color="#8B5A2B"/>
+              </radialGradient>
+              <radialGradient id="heroBallDark" cx="35%" cy="28%" r="75%">
+                <stop offset="0%" stop-color="#6B4423"/>
+                <stop offset="100%" stop-color="#2E2013"/>
+              </radialGradient>
+            </defs>
 
-        <circle cx="200" cy="185" r="175" fill="url(#heroGlow)"/>
+            <circle cx="200" cy="185" r="175" fill="url(#heroGlow)"/>
 
-        <!-- leaf sprigs echoing the logo motif -->
-        <path d="M70 250 Q40 205 62 160 Q95 195 88 240 Q80 248 70 250Z" fill="#5B7F32"/>
-        <path d="M70 250 Q60 210 78 175" stroke="#3F6B2A" stroke-width="2.5" fill="none" stroke-linecap="round"/>
-        <path d="M330 250 Q360 205 338 160 Q305 195 312 240 Q320 248 330 250Z" fill="#8FAE5D"/>
-        <path d="M330 250 Q340 210 322 175" stroke="#5B7F32" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+            <!-- leaf sprigs echoing the logo motif -->
+            <path d="M70 250 Q40 205 62 160 Q95 195 88 240 Q80 248 70 250Z" fill="#5B7F32"/>
+            <path d="M70 250 Q60 210 78 175" stroke="#3F6B2A" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+            <path d="M330 250 Q360 205 338 160 Q305 195 312 240 Q320 248 330 250Z" fill="#8FAE5D"/>
+            <path d="M330 250 Q340 210 322 175" stroke="#5B7F32" stroke-width="2.5" fill="none" stroke-linecap="round"/>
 
-        <!-- bowl -->
-        <ellipse cx="200" cy="330" rx="150" ry="24" fill="#3A2A1B" opacity="0.12"/>
-        <path d="M75 235 a125 82 0 0 0 250 0 z" fill="url(#heroBowl)"/>
-        <ellipse cx="200" cy="235" rx="125" ry="26" fill="#E4D3B4"/>
-        <ellipse cx="200" cy="235" rx="105" ry="19" fill="#F3EAD6"/>
+            <!-- bowl -->
+            <ellipse cx="200" cy="330" rx="150" ry="24" fill="#3A2A1B" opacity="0.12"/>
+            <path d="M75 235 a125 82 0 0 0 250 0 z" fill="url(#heroBowl)"/>
+            <ellipse cx="200" cy="235" rx="125" ry="26" fill="#E4D3B4"/>
+            <ellipse cx="200" cy="235" rx="105" ry="19" fill="#F3EAD6"/>
 
-        <!-- ladoos -->
-        <g>
-          <circle cx="152" cy="205" r="32" fill="url(#heroBallDark)"/>
-          <circle cx="141" cy="194" r="4.5" fill="#C89A5F"/>
-          <circle cx="163" cy="210" r="4" fill="#C89A5F"/>
-          <circle cx="150" cy="220" r="3.5" fill="#C89A5F"/>
+            <!-- ladoos -->
+            <g>
+              <circle cx="152" cy="205" r="32" fill="url(#heroBallDark)"/>
+              <circle cx="141" cy="194" r="4.5" fill="#C89A5F"/>
+              <circle cx="163" cy="210" r="4" fill="#C89A5F"/>
+              <circle cx="150" cy="220" r="3.5" fill="#C89A5F"/>
 
-          <circle cx="222" cy="198" r="36" fill="url(#heroBallLight)"/>
-          <circle cx="210" cy="184" r="5" fill="#EBDCC0"/>
-          <circle cx="236" cy="192" r="4" fill="#8FAE5D"/>
-          <circle cx="222" cy="212" r="4.5" fill="#C1440E" opacity="0.7"/>
+              <circle cx="222" cy="198" r="36" fill="url(#heroBallLight)"/>
+              <circle cx="210" cy="184" r="5" fill="#EBDCC0"/>
+              <circle cx="236" cy="192" r="4" fill="#8FAE5D"/>
+              <circle cx="222" cy="212" r="4.5" fill="#C1440E" opacity="0.7"/>
 
-          <circle cx="188" cy="222" r="28" fill="url(#heroBallDark)"/>
-          <circle cx="178" cy="212" r="4" fill="#C89A5F"/>
-          <circle cx="197" cy="230" r="3.5" fill="#C89A5F"/>
-        </g>
+              <circle cx="188" cy="222" r="28" fill="url(#heroBallDark)"/>
+              <circle cx="178" cy="212" r="4" fill="#C89A5F"/>
+              <circle cx="197" cy="230" r="3.5" fill="#C89A5F"/>
+            </g>
 
-        <!-- small warmth accents -->
-        <circle cx="120" cy="150" r="3" fill="#E0A731" opacity="0.7"/>
-        <circle cx="280" cy="140" r="2.5" fill="#E0A731" opacity="0.6"/>
-        <circle cx="255" cy="165" r="2" fill="#C1440E" opacity="0.5"/>
-      </svg>
+            <!-- small warmth accents -->
+            <circle cx="120" cy="150" r="3" fill="#E0A731" opacity="0.7"/>
+            <circle cx="280" cy="140" r="2.5" fill="#E0A731" opacity="0.6"/>
+            <circle cx="255" cy="165" r="2" fill="#C1440E" opacity="0.5"/>
+          </svg>
+        </div>
+      </div>
     </div>
   </div>
 </section>
