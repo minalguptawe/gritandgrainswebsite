@@ -308,6 +308,8 @@ function formatOrderDate(createdAt) {
   });
 }
 
+const PAYMENT_METHOD_LABELS = { upi: "UPI", cod: "Cash on Delivery", test: "Test" };
+
 function renderOrderHistory(orders) {
   const list = document.getElementById("account-orders-list");
   if (!list) return;
@@ -318,6 +320,7 @@ function renderOrderHistory(orders) {
   list.innerHTML = orders
     .map((order) => {
       const itemsText = (order.items || []).map((i) => `${i.name} (${i.size}) x${i.qty}`).join(", ");
+      const paymentLabel = PAYMENT_METHOD_LABELS[order.paymentMethod] || order.paymentMethod || "";
       return `
       <div class="account-order-row">
         <div class="account-order-row-top">
@@ -326,7 +329,7 @@ function renderOrderHistory(orders) {
         </div>
         <p>${itemsText}</p>
         <div class="account-order-row-bottom">
-          <span>₹${order.total ?? 0}</span>
+          <span>₹${order.total ?? 0} · ${paymentLabel}</span>
           <span class="account-order-status">${order.status || ""}</span>
         </div>
       </div>`;

@@ -258,7 +258,7 @@
     <p class="hint">Enter your mobile number — we'll text you a one-time code.</p>
     <div class="form-field">
       <label for="auth-phone">Mobile Number</label>
-      <input type="tel" id="auth-phone" inputmode="numeric" maxlength="10" placeholder="10-digit mobile number">
+      <input type="tel" id="auth-phone" autocomplete="tel" inputmode="numeric" maxlength="10" placeholder="10-digit mobile number">
     </div>
     <button class="btn btn-primary btn-block" id="auth-send-otp">Send OTP</button>
     <button class="auth-resend" id="auth-goto-signin">Already have a password? Sign In</button>
@@ -280,11 +280,11 @@
     <p class="hint">Tell us your name and email so we can personalize your orders.</p>
     <div class="form-field">
       <label for="auth-name">Full Name</label>
-      <input type="text" id="auth-name" placeholder="Your full name">
+      <input type="text" id="auth-name" autocomplete="name" placeholder="Your full name">
     </div>
     <div class="form-field">
       <label for="auth-email">Email</label>
-      <input type="email" id="auth-email" placeholder="you@example.com">
+      <input type="email" id="auth-email" autocomplete="email" placeholder="you@example.com">
     </div>
     <button class="btn btn-primary btn-block" id="auth-save-profile">Continue</button>
   </div>

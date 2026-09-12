@@ -467,6 +467,44 @@ function closeUpiModal() {
   document.getElementById("upi-overlay")?.classList.remove("open");
 }
 
+function payViaCOD() {
+  const cart = getCart();
+  if (cart.length === 0) {
+    showToast("Your cart is empty");
+    return;
+  }
+  const address = getValidatedAddress();
+  if (!address) return;
+
+  const subtotal = cartTotal(cart);
+  const couponCode = getAppliedCoupon();
+  const total = cartGrandTotal(cart);
+  const orderId = window.GritAuth?.generateOrderId() || "";
+  const orderNote = cart.map((item) => `${item.name} (${item.size}) x${item.qty}`).join(", ");
+
+  let message = `Hi Grit & Grains! I'd like to place a Cash on Delivery order for:\n\n${orderNote}\n\n${formatTotalsBlock(cart)}\n\n${formatAddressBlock(address)}`;
+  if (orderId) message += `\n\nOrder ID: ${orderId}`;
+  message += `\n\nI'll pay in cash when it's delivered. Please confirm and share the delivery timeline.`;
+  window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`, "_blank");
+
+  window.GritAuth?.saveOrder({
+    orderId,
+    items: cart,
+    subtotal,
+    discount: computeDiscount(subtotal, couponCode),
+    couponCode: couponCode || null,
+    total,
+    address,
+    paymentMethod: "cod",
+    status: "new",
+  });
+
+  markOrderPlaced();
+  saveCart([]);
+  localStorage.removeItem(COUPON_KEY);
+  showToast("Thanks! We've been notified on WhatsApp.");
+}
+
 function confirmUpiPaid() {
   if (!_pendingUpiOrder) return;
   const { orderId, total, orderNote, address, items, subtotal, discount, couponCode } = _pendingUpiOrder;
@@ -687,6 +725,7 @@ document.addEventListener("DOMContentLoaded", () => {
   loadPrices().then(() => applyPricesToProductCards());
 
   document.getElementById("checkout-upi")?.addEventListener("click", payViaUPI);
+  document.getElementById("checkout-cod")?.addEventListener("click", payViaCOD);
   document.getElementById("submit-test")?.addEventListener("click", submitTestOrder);
   document.getElementById("upi-close")?.addEventListener("click", closeUpiModal);
   document.getElementById("upi-overlay")?.addEventListener("click", closeUpiModal);

@@ -50,28 +50,28 @@
         <p class="address-subhead">Customer Info</p>
         <div class="form-field">
           <label for="addr-name">Full Name</label>
-          <input type="text" id="addr-name" placeholder="Your full name">
+          <input type="text" id="addr-name" name="name" autocomplete="name" placeholder="Your full name">
         </div>
         <div class="address-row">
           <div class="form-field">
             <label for="addr-phone">Mobile Number</label>
-            <input type="tel" id="addr-phone" inputmode="numeric" maxlength="10" placeholder="10-digit mobile number">
+            <input type="tel" id="addr-phone" name="tel" autocomplete="tel" inputmode="numeric" maxlength="10" placeholder="10-digit mobile number">
           </div>
           <div class="form-field">
             <label for="addr-email">Email</label>
-            <input type="email" id="addr-email" placeholder="you@example.com">
+            <input type="email" id="addr-email" name="email" autocomplete="email" placeholder="you@example.com">
           </div>
         </div>
 
         <p class="address-subhead">Address Info</p>
         <div class="form-field">
           <label for="addr-address">Full Address</label>
-          <textarea id="addr-address" rows="2" placeholder="House no., street, area"></textarea>
+          <textarea id="addr-address" name="street-address" autocomplete="street-address" rows="2" placeholder="House no., street, area"></textarea>
         </div>
         <div class="address-row">
           <div class="form-field">
             <label for="addr-locality">Locality / Area <span class="optional">(optional)</span></label>
-            <input type="text" id="addr-locality" placeholder="Locality or area">
+            <input type="text" id="addr-locality" name="address-line2" autocomplete="address-line2" placeholder="Locality or area">
           </div>
           <div class="form-field">
             <label for="addr-landmark">Landmark <span class="optional">(optional)</span></label>
@@ -81,16 +81,16 @@
         <div class="address-row">
           <div class="form-field">
             <label for="addr-pincode">Pin Code</label>
-            <input type="text" id="addr-pincode" inputmode="numeric" maxlength="6" placeholder="6-digit pincode">
+            <input type="text" id="addr-pincode" name="postal-code" autocomplete="postal-code" inputmode="numeric" maxlength="6" placeholder="6-digit pincode">
           </div>
           <div class="form-field">
             <label for="addr-city">City</label>
-            <input type="text" id="addr-city" placeholder="City">
+            <input type="text" id="addr-city" name="address-level2" autocomplete="address-level2" placeholder="City">
           </div>
         </div>
         <div class="form-field">
           <label for="addr-state">State</label>
-          <select id="addr-state">
+          <select id="addr-state" name="address-level1" autocomplete="address-level1">
             <option value="">Select State</option>
             <option>Andaman and Nicobar Islands</option>
             <option>Andhra Pradesh</option>
@@ -152,6 +152,8 @@
       <div class="cart-total"><span>Total</span><span id="cart-total-amount">₹0</span></div>
       <button class="btn btn-upi btn-block" id="checkout-upi">Pay via UPI (QR)</button>
       <p class="checkout-note">You'll get a QR code to scan and pay with any UPI app.</p>
+      <button class="btn btn-secondary btn-block" id="checkout-cod" style="margin-top:10px;">Pay on Delivery (Cash)</button>
+      <p class="checkout-note">Pay in cash when your order is delivered.</p>
       <button class="btn btn-secondary btn-block" id="submit-test" style="display:none;margin-top:10px;">Submit_test</button>
     </div>
 
@@ -238,7 +240,7 @@
     <p class="hint">Enter your mobile number — we'll text you a one-time code.</p>
     <div class="form-field">
       <label for="auth-phone">Mobile Number</label>
-      <input type="tel" id="auth-phone" inputmode="numeric" maxlength="10" placeholder="10-digit mobile number">
+      <input type="tel" id="auth-phone" autocomplete="tel" inputmode="numeric" maxlength="10" placeholder="10-digit mobile number">
     </div>
     <button class="btn btn-primary btn-block" id="auth-send-otp">Send OTP</button>
     <button class="auth-resend" id="auth-goto-signin">Already have a password? Sign In</button>
@@ -260,11 +262,11 @@
     <p class="hint">Tell us your name and email so we can personalize your orders.</p>
     <div class="form-field">
       <label for="auth-name">Full Name</label>
-      <input type="text" id="auth-name" placeholder="Your full name">
+      <input type="text" id="auth-name" autocomplete="name" placeholder="Your full name">
     </div>
     <div class="form-field">
       <label for="auth-email">Email</label>
-      <input type="email" id="auth-email" placeholder="you@example.com">
+      <input type="email" id="auth-email" autocomplete="email" placeholder="you@example.com">
     </div>
     <button class="btn btn-primary btn-block" id="auth-save-profile">Continue</button>
   </div>
