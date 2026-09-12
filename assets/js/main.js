@@ -36,6 +36,7 @@ const SHEETS_BASE_URL =
   "https://script.google.com/macros/s/AKfycbztwalpDHMcS5PNzro6YI8C94Hvu1P4KyYxP0mvxHKS05AJcjimjbPmlIBLvE1XRQ9D/exec";
 const COUPONS_ENDPOINT = `${SHEETS_BASE_URL}?type=coupons`;
 const PRICES_ENDPOINT = `${SHEETS_BASE_URL}?type=prices`;
+const DELIVERY_ENDPOINT = `${SHEETS_BASE_URL}?type=delivery`;
 let COUPONS = {};
 let couponsLoaded = false;
 
@@ -89,8 +90,25 @@ function applyPricesToProductCards() {
   });
 }
 
-const FREE_DELIVERY_THRESHOLD = 1000;
-const DELIVERY_CHARGE = 100;
+// Fallback values, used until the "Delivery" sheet tab loads (or if that
+// fetch ever fails) — kept in sync with the sheet's own defaults.
+let FREE_DELIVERY_THRESHOLD = 2000;
+let DELIVERY_CHARGE = 100;
+
+async function loadDeliverySettings() {
+  try {
+    const res = await fetch(DELIVERY_ENDPOINT);
+    const data = await res.json();
+    if (typeof data.threshold === "number") FREE_DELIVERY_THRESHOLD = data.threshold;
+    if (typeof data.charge === "number") DELIVERY_CHARGE = data.charge;
+  } catch (err) {
+    console.error("Failed to load delivery settings, using defaults:", err);
+  }
+  const hint = document.getElementById("delivery-hint");
+  if (hint) {
+    hint.textContent = `Free delivery on orders over ₹${FREE_DELIVERY_THRESHOLD.toLocaleString("en-IN")} — a ₹${DELIVERY_CHARGE.toLocaleString("en-IN")} delivery charge applies below that.`;
+  }
+}
 
 const CART_KEY = "gg-cart";
 const COUPON_KEY = "gg-coupon";
@@ -723,6 +741,7 @@ document.addEventListener("DOMContentLoaded", () => {
   initTestMode();
   loadCoupons().then(() => renderCartDrawer());
   loadPrices().then(() => applyPricesToProductCards());
+  loadDeliverySettings().then(() => renderCartDrawer());
 
   document.getElementById("checkout-upi")?.addEventListener("click", payViaUPI);
   document.getElementById("checkout-cod")?.addEventListener("click", payViaCOD);
